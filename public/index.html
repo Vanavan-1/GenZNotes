@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RecallNote — Voice-to-README Learning Journal</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="brand" id="btnHome" type="button">
+        <span class="brand-icon" aria-hidden="true">🎙️</span>
+        <span>
+          <strong>RecallNote</strong>
+          <small>Voice-to-README Learning Journal</small>
+        </span>
+      </button>
+
+      <div class="topbar-actions">
+        <div class="search-wrap" id="searchWrap">
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="Search topics, tags, steps (e.g. PCB)..."
+            aria-label="Search notes"
+          />
+        </div>
+        <button class="btn btn-primary" id="btnNewNote" type="button">+ New Learning Note</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- LIBRARY VIEW -->
+    <section id="viewLibrary" class="view">
+      <div class="section-header">
+        <div>
+          <h1>Your Learning Library</h1>
+          <p class="subtitle">
+            Revisit what you built or learned months later — organized into ordered steps, images, links, and a downloadable <code>README.md</code>.
+          </p>
+        </div>
+        <div class="stats-pill" id="notesCountPill">0 notes</div>
+      </div>
+
+      <div id="notesGrid" class="notes-grid"></div>
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-icon">📘</div>
+        <h2>No learning notes yet</h2>
+        <p>Click <strong>+ New Learning Note</strong> to record what you learned using voice-to-text, images, and reference links.</p>
+      </div>
+    </section>
+
+    <!-- CAPTURE / EDIT VIEW -->
+    <section id="viewEditor" class="view hidden">
+      <div class="editor-header">
+        <button class="btn btn-ghost" id="btnCancelEdit" type="button">← Back to Library</button>
+        <div class="speech-toolbar">
+          <label for="speechLang">Voice language:</label>
+          <select id="speechLang">
+            <option value="en-US">English (US)</option>
+            <option value="en-IN">English (India)</option>
+            <option value="en-GB">English (UK)</option>
+          </select>
+          <span id="speechSupportBadge" class="badge">Checking mic...</span>
+        </div>
+      </div>
+
+      <form id="noteForm" class="card form-card">
+        <h1 id="editorHeading">New Learning Note</h1>
+        <p class="subtitle">Answer these 4 quick questions by speaking or typing. We will organize everything into a clean, ordered <code>README.md</code>.</p>
+
+        <div class="form-row two-col">
+          <div class="field">
+            <label for="noteTitle">Topic / Project Name *</label>
+            <input type="text" id="noteTitle" required placeholder="e.g., PCB Design, Docker Setup, STM32 UART" />
+          </div>
+          <div class="field">
+            <label for="noteTags">Tags (comma-separated)</label>
+            <input type="text" id="noteTags" placeholder="e.g., PCB Design, KiCad, Hardware" />
+          </div>
+        </div>
+
+        <!-- Question 1 -->
+        <div class="question-block">
+          <div class="question-head">
+            <div>
+              <span class="q-num">Question 1</span>
+              <label for="qOverview">What did you learn or build, and what was the goal?</label>
+            </div>
+            <button type="button" class="btn btn-mic" data-target="qOverview">
+              <span class="mic-dot"></span>
+              <span class="mic-label">Speak</span>
+            </button>
+          </div>
+          <textarea id="qOverview" rows="3" placeholder="Example: Designed a 2-layer microcontroller PCB from schematic to Gerber files..."></textarea>
+          <div class="interim-line" id="interim-qOverview"></div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="question-block">
+          <div class="question-head">
+            <div>
+              <span class="q-num">Question 2</span>
+              <label for="qSteps">What were the ordered steps / processes involved? (One step per line)</label>
+            </div>
+            <button type="button" class="btn btn-mic" data-target="qSteps">
+              <span class="mic-dot"></span>
+              <span class="mic-label">Speak</span>
+            </button>
+          </div>
+          <textarea id="qSteps" rows="5" placeholder="Create schematic & add power flags&#10;Run ERC and assign footprints&#10;Set board outline and trace width rules&#10;Place components and route traces&#10;Run DRC and export Gerber files"></textarea>
+          <div class="interim-line" id="interim-qSteps"></div>
+          <small class="hint">Tip: Say "next line" or press Enter between steps — we'll auto-number them in order.</small>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="question-block">
+          <div class="question-head">
+            <div>
+              <span class="q-num">Question 3</span>
+              <label for="qDetails">What did you do in each process? (Tools, settings, values, commands)</label>
+            </div>
+            <button type="button" class="btn btn-mic" data-target="qDetails">
+              <span class="mic-dot"></span>
+              <span class="mic-label">Speak</span>
+            </button>
+          </div>
+          <textarea id="qDetails" rows="4" placeholder="Example: Used 0.25mm traces for signals, 0.5mm for 5V power, 100nF decoupling caps near MCU..."></textarea>
+          <div class="interim-line" id="interim-qDetails"></div>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="question-block">
+          <div class="question-head">
+            <div>
+              <span class="q-num">Question 4</span>
+              <label for="qTakeaways">What mistakes, gotchas, or tips should you remember 2 months later?</label>
+            </div>
+            <button type="button" class="btn btn-mic" data-target="qTakeaways">
+              <span class="mic-dot"></span>
+              <span class="mic-label">Speak</span>
+            </button>
+          </div>
+          <textarea id="qTakeaways" rows="3" placeholder="Example: Double-check USB pinout against datasheet before ordering; add silkscreen labels on test points..."></textarea>
+          <div class="interim-line" id="interim-qTakeaways"></div>
+        </div>
+
+        <!-- Reference Websites -->
+        <div class="question-block">
+          <div class="question-head">
+            <div>
+              <span class="q-num">References</span>
+              <label>Helpful Websites / Tutorials / Datasheets</label>
+            </div>
+          </div>
+          <div class="link-adder">
+            <input type="text" id="linkLabelInput" placeholder="Label (e.g., KiCad Docs)" />
+            <input type="url" id="linkUrlInput" placeholder="https://example.com" />
+            <button type="button" class="btn btn-secondary" id="btnAddLink">+ Add Link</button>
+          </div>
+          <ul id="linksList" class="links-edit-list"></ul>
+        </div>
+
+        <!-- Images Upload -->
+        <div class="question-block">
+          <div class="question-head">
+            <div>
+              <span class="q-num">Visuals</span>
+              <label>Attach Images (Schematics, Screenshots, Photos)</label>
+            </div>
+          </div>
+          <div id="dropZone" class="drop-zone">
+            <input type="file" id="imageInput" accept="image/*" multiple hidden />
+            <p>Drag &amp; drop images here, or <button type="button" class="link-btn" id="btnBrowseImages">browse files</button></p>
+            <small>PNG, JPG, WebP, GIF supported. You can add a caption to each image.</small>
+          </div>
+          <div id="imagePreviewGrid" class="image-preview-grid"></div>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn btn-ghost" id="btnCancelEditBottom">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveNote">Save &amp; Generate README</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- READER / ORDERED README VIEW -->
+    <section id="viewReader" class="view hidden">
+      <div class="reader-topbar">
+        <button class="btn btn-ghost" id="btnBackToLibrary" type="button">← Back to Library</button>
+        <div class="reader-actions">
+          <div class="segmented" role="tablist">
+            <button type="button" class="seg-btn active" id="tabVisual">Ordered Guide</button>
+            <button type="button" class="seg-btn" id="tabRaw">README.md</button>
+          </div>
+          <button type="button" class="btn btn-secondary" id="btnCopyReadme">Copy Markdown</button>
+          <a class="btn btn-secondary" id="btnDownloadReadme" href="#" download>Download README.md</a>
+          <button type="button" class="btn btn-primary" id="btnEditNote">Edit</button>
+          <button type="button" class="btn btn-danger" id="btnDeleteNote">Delete</button>
+        </div>
+      </div>
+
+      <article id="readerVisual" class="card reader-card"></article>
+      <div id="readerRaw" class="card raw-card hidden">
+        <pre><code id="rawMarkdownCode"></code></pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- Image Lightbox -->
+  <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+    <img id="lightboxImg" src="" alt="" />
+    <p id="lightboxCaption"></p>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

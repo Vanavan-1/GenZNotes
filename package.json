@@ -1,0 +1,9 @@
+{
+  "name": "voice-notes-readme",
+  "version": "1.0.0",
+  "description": "Voice-to-text learning journal that turns guided Q&A, images, and links into ordered README.md notes.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
